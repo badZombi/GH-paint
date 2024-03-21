@@ -1,34 +1,35 @@
 import argparse
-import os
+import os, sys
 from PIL import Image
 import matplotlib as mpl
 from datetime import datetime, timedelta
-from subprocess import Popen
+from subprocess import Popen, PIPE
 
 hex_to_daily_commit_count = {
-    "39d353": 60,
-    "26a641": 45,
-    "006d32": 30,
-    "0e4429": 15,
+    "39d353": 20,
+    "26a641": 15,
+    "006d32": 10,
+    "0e4429": 5,
     "161b22": 0,
     "000000": 0
 }
 
-def find_sunday_before_date(year, month, day):
-    this_day = check_day(year, month, day)
+
+
+
+
+def find_sunday_before_date(date):
+    this_day = check_day(date)
     if (this_day == 0):
         print("We can start on this day.")
-        return datetime(year, month, day).replace(hour=16, minute=20)
+        return date.replace(hour=16, minute=20)
     else:
-        sub = day - this_day
-        newday = datetime(year, month, day) - timedelta(days=this_day)
+        newday = date - timedelta(days=this_day)
         print("The previous Sunday was {}.".format(newday.strftime('%Y-%m-%d')))
         return newday.replace(hour=16, minute=20)
 
-def check_day(year, month, day):
+def check_day(given_date):
     try:
-        # Create a datetime object for the given date
-        given_date = datetime(year, month, day)
         days = {
             0: "Sunday",
             1: "Monday",
@@ -97,30 +98,57 @@ def main():
     # map_image(args.image, start_date, col)
 
     curr_date = datetime.now()
+    this_sun = find_sunday_before_date(curr_date)
+    first_sun = this_sun - timedelta(weeks=52)
+    print("this sunday: {}".format(this_sun))
+    print("first sunday: {}".format(first_sun))
     # directory = 'repository-' + curr_date.strftime('%Y-%m-%d-%H-%M-%S')
-    repo = args.repo
-    if repo is not None:
-        start = repo.rfind('/') + 1
-        end = repo.rfind('.')
-        directory = repo[start:end]
-        print("Creating new repo in {} dir".format(directory))
-
-    os.mkdir(directory)
+    artname = args.artname
+    # if repo is not None:
+    #     start = repo.rfind('/') + 1
+    #     end = repo.rfind('.')
+    #     directory = repo[start:end]
+    #     print("Creating new repo in {} dir".format(directory))
+    directory = "GH-Artwork-{}".format(artname)
+    if os.path.isdir(directory):
+        print("{} exists".format(directory))
+    else:
+        print("creating repo directory")
+        os.mkdir(directory)
+    
     os.system('cp {} {}/{}'.format(args.image, directory, "src_image"))
     os.chdir(directory)
+
+    if os.path.isdir('.git'):
+        print("git repository is initialized. archiving...")
+        os.system('mv .git .git_bk_{}'.format(curr_date.strftime('"%Y-%m-%d_%H:%M:%S"')))
+
+    print("initializing git repository")
     run(['git', 'init'])
-    start_date = find_sunday_before_date(args.year, args.month, args.day)
+
+    repo_url = "git@github.com:{}/{}.git".format(args.username, directory)
+    os.system('gh repo delete {} --yes'.format(directory)) 
+
+    os.system('gh repo create {} --private'.format(directory)) 
+
+    start_date = first_sun
 
     pixels = map_image("src_image", start_date, col)
     # print(pixels)
+    run(['git', 'remote', 'add', 'origin', repo_url])
+    count = 0
     for p in pixels:
         # print(p)
         this_commit = 0
         while this_commit < p['commits']:
+            count = count + 1
             date = p['date'].replace(hour=16, minute=20)
             commit(date + timedelta(minutes=this_commit))
             this_commit = this_commit + 1
-    run(['git', 'remote', 'add', 'origin', repo])
+            print(count)
+            if count % 25 == 0:
+                run(['git', 'push', '-u', 'origin', 'main'])
+
     run(['git', 'push', '-u', 'origin', 'main'])
 
 def commit(date):
@@ -137,29 +165,29 @@ def code(date):
 def comment(date):
     return "pixel data for {}".format(date.strftime('%H:%M:%S'))
 
-def run(commands):
-    Popen(commands).wait()
+def run(commands, suppress=False):
+    if suppress == True:
+        process = Popen(commands, stdout=PIPE, stderr=PIPE).wait()
+        # stdout, stderr = process.communicate()
+        # print(stdout)
+        sys.stdout.write(".")
+    else:
+        Popen(commands).wait()
 
 def arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--image',
                         required=False, type=str, default="gh1.png",
                         help="""the image to be drawn""")
-    parser.add_argument('-m', '--month',
-                        required=True, type=int,
-                        help="""month of start date""")
-    parser.add_argument('-d', '--day',
-                        required=True, type=int,
-                        help="""day of start date""")
-    parser.add_argument('-y', '--year',
-                        required=True, type=int,
-                        help="""year of start date""")
     parser.add_argument('-c', '--columns',
                         required=False, type=int,
                         help="""max number of columns to process""")
-    parser.add_argument('-r', '--repo',
+    parser.add_argument('-a', '--artname',
                         required=True, type=str,
-                        help="""the github repository to push to""")
+                        help="""thename of this artwork""")
+    parser.add_argument('-u', '--username',
+                        required=True, type=str,
+                        help="""github username""")
     return parser.parse_args()
                         
 
