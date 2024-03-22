@@ -1,6 +1,6 @@
 # Basic usage:
 
-Create an pixel image (will give pallette details here in a bit)
+Create a pixel image (will give pallette details here in a bit)
 
     tool I used: https://www.pixilart.com/draw
 
