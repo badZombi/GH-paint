@@ -1,24 +1,49 @@
-# Basic usage:
+# GH-Paint
 
-Create an pixel image (will give pallette details here in a bit)
+This is a little _boredom project_ I made to entertain myself. Originally it started as an automated way to fill my Github timeline with random noise during periods with little activity. I realized that drawing actual pictures would be a lot more fun and possibly even ueful so I went that route. 
 
-    tool I used: https://www.pixilart.com/draw
+The idea is to create a small pixe-art file and have it parsed into varying numbers of commits in an empty project. The final timeline color is determined by how many commits are made on a day. By adjusting the total number we can control each day as a pixel on a roughly 7x53 pixel grid.
 
+This is not a well polished project that follows any coding standards or good code practices. It was just an idea I wanted to make when I was bored.
 
-Create an empty repo in github and copy the url e.g. `git@github.com:badZombi/2022-artwork.git`
+There are 2 versions. 
 
+The more advanced or "full" version will automate the creation (and destruction) of the repo. Be caerful with this one. it is intended to place an artwork on your profile landing timeline. It will always try to start on the first day of the "last year"
 
-select a date you want your artwork to begin, e.g. 01-02-2022
+# Simple version:
 
-the tool will select the appropriate Sunday to start drawing on for that week.
+The simple version will place the artwork anywhere you like on your timeline. It requires an existing empty project to work.
 
-Run the command and point to the image you created:
+## Setup
 
-`python doit.py -y=2022 -m=1 -d=2 -i=images/gh2.png -r=git@github.com:badZombi/2022-artwork.git`
+You will need git installed and configured with your name and email etc.
 
+```
+git clone git@github.com:badZombi/GH-paint.git
+cd GH-paint
+```
 
-will add more detail later when I clean up the messy code.
+I'd recommend using venv.
+e.g.
+```
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-Also added a "full" version that uses the github CLI to create and destroy repos as necessary. This version is intended to be an easy way to clear and update an art repo so it can always be on the "contributions in the last year" timeline where a visitor will land. You need to log into the CLI and gove it destroy scope perms. It auto-names the libraries based on input so it would be really difficult to have a collision and accidental deletion of an unrelated repo. 
+## Usage
 
-Its all very messy still and has old code/comments scattered around. It's a work-in-progress to be continued when I am bored and have time.
+![pixel art to be converted](https://raw.githubusercontent.com/badZombi/GH-paint/main/images/doc/johnzblack.jpg)
+```
+python doit.py -y=2016 -m=1 -d=1 -i=images/johnzblack.png -r=git@github.com:badZombi/jan2016-example.git
+```
+![pixel art to be converted](https://raw.githubusercontent.com/badZombi/GH-paint/main/images/doc/jan2016-dk.jpg)
+
+----
+
+- Bullets
+- Like this
+- And so on
+
+> Blockquotes
+
+[Links](http://like.so/)
