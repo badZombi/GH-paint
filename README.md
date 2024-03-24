@@ -20,7 +20,7 @@ You will need git installed and configured with your name and email etc.
 
 ```
 git clone git@github.com:badZombi/GH-paint.git
-````
+```
 ```
 cd GH-paint
 ```
@@ -29,6 +29,8 @@ I'd recommend using venv.
 e.g.
 ```
 python3 -m venv .venv
+```
+```
 source .venv/bin/activate
 ```
 
