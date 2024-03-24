@@ -18,10 +18,8 @@ The simple version will place the artwork anywhere you like on your timeline. It
 
 You will need git installed and configured with your name and email etc.
 
-```
-git clone git@github.com:badZombi/GH-paint.git
-cd GH-paint
-```
+`git clone git@github.com:badZombi/GH-paint.git`
+`cd GH-paint`
 
 I'd recommend using venv.
 e.g.
