@@ -15,9 +15,6 @@ hex_to_daily_commit_count = {
 }
 
 
-
-
-
 def find_sunday_before_date(date):
     this_day = check_day(date)
     if (this_day == 0):
@@ -90,19 +87,18 @@ def main():
     args = arguments()
     curr_date = datetime.now()
 
-    # print(curr_date.replace(hour=20, minute=0))
     col=None
     if args.columns:
         col = args.columns
 
-    # map_image(args.image, start_date, col)
+    pf = 25
+    if args.pushfrequency:
+        pf = args.pushfrequency
 
     curr_date = datetime.now()
     this_sun = find_sunday_before_date(curr_date)
     first_sun = this_sun - timedelta(weeks=52)
-    print("this sunday: {}".format(this_sun))
-    print("first sunday: {}".format(first_sun))
-    # directory = 'repository-' + curr_date.strftime('%Y-%m-%d-%H-%M-%S')
+    
     artname = args.artname
     # if repo is not None:
     #     start = repo.rfind('/') + 1
@@ -138,6 +134,7 @@ def main():
     run(['git', 'remote', 'add', 'origin', repo_url])
     count = 0
     for p in pixels:
+        op = ""
         # print(p)
         this_commit = 0
         while this_commit < p['commits']:
@@ -145,9 +142,11 @@ def main():
             date = p['date'].replace(hour=16, minute=20)
             commit(date + timedelta(minutes=this_commit))
             this_commit = this_commit + 1
-            print(count)
-            if count % 25 == 0:
-                run(['git', 'push', '-u', 'origin', 'main'])
+            op = op + "."
+            print(op)
+            if count % pf == 0:
+                print("push...")
+                run(['git', 'push', '-u', 'origin', 'main'], True)
 
     run(['git', 'push', '-u', 'origin', 'main'])
 
@@ -157,7 +156,7 @@ def commit(date):
         file.write(code(date) + '\n\n')
     run(['git', 'add', '.'])
     run(['git', 'commit', '-m', '"%s"' % comment(date),
-         '--date', date.strftime('"%Y-%m-%d %H:%M:%S"')])
+         '--date', date.strftime('"%Y-%m-%d %H:%M:%S"')], True)
 
 def code(date):
     return "print('yep' if this_is_art else 'meh') # {}".format(date.strftime('%H:%M:%S'))
@@ -188,6 +187,9 @@ def arguments():
     parser.add_argument('-u', '--username',
                         required=True, type=str,
                         help="""github username""")
+    parser.add_argument('-pf', '--pushfrequency',
+                        required=False, type=int,
+                        help="""push after how many commits""")
     return parser.parse_args()
                         
 
